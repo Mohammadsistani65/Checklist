@@ -333,9 +333,6 @@ async function doRegister(name,phone,uplineCode,ownCode){
     state.errorMsg="کد اختصاصی باید بین ۴ تا ۶ حرف/رقم انگلیسی باشد."; render(); return;
   }
   const existingAll = await loadAllLeaders();
-  if(existingAll.length>0 && !uplineCode.trim()){
-    state.errorMsg="کد لیدر بالادستی الزامی است. این کد را از لیدر معرف خود بگیرید."; render(); return;
-  }
   if(uplineCode.trim()){
     const up = existingAll.find(l=>l.code===uplineCode.trim().toUpperCase());
     if(!up){ state.errorMsg="کد لیدر بالادستی نامعتبر است."; render(); return; }
@@ -463,8 +460,8 @@ function renderAuth(){
         <div class="field"><label>شماره تماس</label><input type="tel" id="regPhone" placeholder="09xxxxxxxxx"></div>
         <div class="field"><label>کد اختصاصی دلخواه شما (۴ تا ۶ حرف/رقم انگلیسی)</label><input type="text" id="regOwnCode" placeholder="مثلاً MOHAM1" maxlength="6"></div>
         <div class="hint">این کد، شناسه شماست. آن را به لیدرهای زیرمجموعه خود بدهید تا هنگام ثبت‌نام وارد کنند.</div>
-        <div class="field"><label>کد لیدر بالادستی (معرف شما)</label><input type="text" id="regUpline" placeholder="کد لیدر بالادستی — از لیدر خود بگیرید"></div>
-        <div class="hint">اگر شما اولین کاربر این سازمان هستید، این فیلد را خالی بگذارید.</div>
+        <div class="field"><label>کد لیدر بالادستی (معرف شما) — اختیاری</label><input type="text" id="regUpline" placeholder="کد لیدر بالادستی — از لیدر خود بگیرید"></div>
+        <div class="hint">اگر لیدر بالادستی دارید، کدش را وارد کنید تا زیرمجموعه او ثبت شوید. اگر ندارید یا اولین نفر سازمان هستید، این فیلد را خالی بگذارید.</div>
         <button class="btn btn-gold" id="btnRegister" style="margin-top:10px;">ثبت‌نام</button>
       `}
       <div style="text-align:center;font-size:10.5px;color:var(--ink-soft);margin-top:16px;">طراح: محمد سیستانی</div>
