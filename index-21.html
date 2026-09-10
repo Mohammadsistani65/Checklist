@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>پله‌های صعود همکاران جدید</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<style>
+  :root{
+    --bg:#FAF7F0;
+    --surface:#FFFFFF;
+    --surface-2:#F1ECE0;
+    --ink:#232323;
+    --ink-soft:#6b6458;
+    --line:#E4DCC9;
+    --gold:#B8862E;
+    --gold-soft:#F2E4C4;
+    --teal:#2F6F63;
+    --teal-soft:#E0EEE9;
+    --danger:#B4453B;
+    --radius:14px;
+    --shadow:0 2px 14px rgba(35,35,35,.06);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Vazirmatn',sans-serif;
+    -webkit-text-size-adjust:100%;
+    min-height:100vh;
+    padding-bottom:40px;
+  }
+  input,select,textarea,button{
+    font-family:'Vazirmatn',sans-serif;
+    font-size:16px; /* iOS zoom fix */
+    -webkit-appearance:none;
+    appearance:none;
+  }
+  button{cursor:pointer;}
+  .container{max-width:880px;margin:0 auto;padding:14px;}
+
+  /* ---------- Header / staircase brand ---------- */
+  .brand{
+    display:flex;align-items:center;gap:12px;
+    padding:18px 16px;background:linear-gradient(135deg,#22302B,#1B2420);
+    color:#F4EFE1;border-radius:0 0 22px 22px;margin-bottom:16px;
+    box-shadow:var(--shadow);
+  }
+  .brand-steps{display:flex;align-items:flex-end;gap:3px;height:32px;flex:0 0 auto;}
+  .brand-steps i{display:block;width:6px;background:var(--gold);border-radius:2px;}
+  .brand-steps i:nth-child(1){height:10px;}
+  .brand-steps i:nth-child(2){height:16px;}
+  .brand-steps i:nth-child(3){height:23px;}
+  .brand-steps i:nth-child(4){height:32px;}
+  .brand h1{font-size:17px;margin:0;font-weight:800;letter-spacing:.2px;}
+  .brand p{margin:2px 0 0;font-size:12px;color:#C9C2AC;}
+  .brand-right{margin-inline-start:auto;text-align:left;font-size:11px;color:#C9C2AC;}
+  .brand-right b{display:block;color:#F4EFE1;font-size:13px;}
+  .logout-btn{background:none;border:1px solid #4b564f;color:#C9C2AC;border-radius:8px;padding:4px 10px;font-size:11px;margin-top:6px;}
+
+  /* ---------- Cards / layout ---------- */
+  .card{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;margin-bottom:14px;border:1px solid var(--line);}
+  .card h2{font-size:15px;margin:0 0 12px;font-weight:700;display:flex;align-items:center;gap:8px;}
+  .card h2 .dot{width:8px;height:8px;border-radius:50%;background:var(--gold);}
+  label{display:block;font-size:12.5px;color:var(--ink-soft);margin-bottom:5px;font-weight:600;}
+  .field{margin-bottom:12px;}
+  input[type=text],input[type=tel],input[type=number],select,textarea{
+    width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink);
+  }
+  input:focus,select:focus,textarea:focus{outline:2px solid var(--gold-soft);border-color:var(--gold);}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .jalali-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:12px 16px;border-radius:11px;border:none;font-weight:700;font-size:14.5px;width:100%;}
+  .btn-primary{background:var(--teal);color:#fff;}
+  .btn-primary:active{opacity:.85;}
+  .btn-gold{background:var(--gold);color:#fff;}
+  .btn-outline{background:#fff;border:1.5px solid var(--line);color:var(--ink);}
+  .btn-sm{width:auto;padding:8px 14px;font-size:13px;}
+  .btn-danger{background:var(--danger);color:#fff;}
+  .hint{font-size:12px;color:var(--ink-soft);margin-top:6px;line-height:1.9;}
+  .error-msg{background:#FBEAE8;color:var(--danger);padding:10px 12px;border-radius:10px;font-size:13px;margin-bottom:10px;}
+  .success-msg{background:var(--teal-soft);color:var(--teal);padding:10px 12px;border-radius:10px;font-size:13px;margin-bottom:10px;}
+
+  /* ---------- Tabs ---------- */
+  .tabs{display:flex;gap:6px;overflow-x:auto;margin-bottom:14px;padding-bottom:2px;}
+  .tab-btn{flex:0 0 auto;padding:9px 14px;border-radius:10px;border:1px solid var(--line);background:#fff;font-size:13px;font-weight:600;color:var(--ink-soft);white-space:nowrap;}
+  .tab-btn.active{background:var(--teal);color:#fff;border-color:var(--teal);}
+
+  /* ---------- Entry list ---------- */
+  .search-box{position:relative;margin-bottom:12px;}
+  .search-box input{padding-right:38px;}
+  .entry-item{padding:13px 14px;border:1px solid var(--line);border-radius:12px;margin-bottom:9px;background:#fff;display:flex;align-items:center;gap:10px;}
+  .entry-item:active{background:var(--surface-2);}
+  .entry-main{flex:1;min-width:0;}
+  .entry-main .nm{font-weight:700;font-size:14.5px;}
+  .entry-main .sub{font-size:11.5px;color:var(--ink-soft);margin-top:3px;}
+  .progress-ring{flex:0 0 auto;width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:800;color:#fff;}
+  .badge{display:inline-block;font-size:10.5px;padding:2px 8px;border-radius:20px;background:var(--gold-soft);color:var(--gold);font-weight:700;margin-inline-start:6px;}
+  .badge-teal{background:var(--teal-soft);color:var(--teal);}
+
+  /* ---------- Checklist ---------- */
+  .step-item{display:flex;align-items:flex-start;gap:10px;padding:12px 10px;border-bottom:1px solid var(--line);}
+  .step-item:last-child{border-bottom:none;}
+  .step-check{flex:0 0 auto;width:26px;height:26px;border-radius:8px;border:2px solid var(--line);display:flex;align-items:center;justify-content:center;margin-top:2px;background:#fff;}
+  .step-check.checked{background:var(--teal);border-color:var(--teal);color:#fff;}
+  .step-body{flex:1;}
+  .step-title{font-size:14px;font-weight:700;}
+  .step-desc{font-size:12px;color:var(--ink-soft);margin-top:3px;line-height:1.8;}
+  .step-time{display:inline-block;font-size:10px;color:var(--gold);margin-top:4px;font-weight:700;}
+  .overall-bar-wrap{background:var(--surface-2);border-radius:20px;height:10px;overflow:hidden;margin:8px 0 4px;}
+  .overall-bar{height:100%;background:linear-gradient(90deg,var(--gold),var(--teal));border-radius:20px;transition:width .3s;}
+
+  /* ---------- Stats ---------- */
+  .stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+  .stat-box{background:var(--surface-2);border-radius:12px;padding:14px;text-align:center;}
+  .stat-box .num{font-size:22px;font-weight:800;color:var(--teal);}
+  .stat-box .lbl{font-size:11.5px;color:var(--ink-soft);margin-top:4px;}
+  .bar-row{margin-bottom:10px;}
+  .bar-row .lbl-row{display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:4px;}
+  .bar-track{background:var(--surface-2);border-radius:10px;height:9px;overflow:hidden;}
+  .bar-fill{height:100%;background:var(--gold);border-radius:10px;}
+
+  /* ---------- Auth screen ---------- */
+  .auth-wrap{min-height:80vh;display:flex;align-items:center;justify-content:center;padding:20px;}
+  .auth-card{max-width:400px;width:100%;}
+  .auth-toggle{display:flex;background:var(--surface-2);border-radius:12px;padding:4px;margin-bottom:16px;}
+  .auth-toggle button{flex:1;background:none;border:none;padding:9px;border-radius:9px;font-size:13.5px;font-weight:700;color:var(--ink-soft);}
+  .auth-toggle button.active{background:#fff;color:var(--teal);box-shadow:var(--shadow);}
+
+  .modal-bg{position:fixed;inset:0;background:rgba(20,20,20,.5);display:flex;align-items:flex-end;justify-content:center;z-index:50;}
+  .modal-box{background:#fff;border-radius:18px 18px 0 0;padding:18px;width:100%;max-width:880px;max-height:88vh;overflow-y:auto;}
+  .modal-box.centered{border-radius:18px;margin:20px;max-height:85vh;}
+
+  select{background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24'><path fill='%236b6458' d='M7 10l5 5 5-5z'/></svg>");background-repeat:no-repeat;background-position:10px center;padding-inline-start:32px;}
+  #pdfRender{position:fixed;top:-9999px;left:-9999px;width:760px;background:#fff;padding:24px;font-family:'Vazirmatn',sans-serif;direction:rtl;}
+  .loader{display:flex;align-items:center;justify-content:center;padding:40px;color:var(--ink-soft);font-size:13px;}
+  .empty-state{text-align:center;padding:30px 14px;color:var(--ink-soft);font-size:13px;}
+  .field-view{padding:10px 0;border-bottom:1px dashed var(--line);}
+  .field-view label{margin-bottom:2px;}
+  .field-view .val{font-size:14px;font-weight:600;}
+  .top-bar-inline{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+  .close-x{background:var(--surface-2);border:none;width:32px;height:32px;border-radius:10px;font-size:16px;color:var(--ink-soft);}
+  .copycode{display:flex;align-items:center;gap:8px;background:var(--gold-soft);border-radius:12px;padding:10px 12px;margin-top:8px;}
+  .copycode b{font-size:16px;letter-spacing:2px;color:var(--gold);}
+</style>
+</head>
+<body>
+
+<div id="app"></div>
+<div id="pdfRender"></div>
+
+<script>
+/* ============================================================
+   SUPABASE CONFIG — این دو خط را با اطلاعات پروژه سوپابیس خودتان
+   جایگزین کنید (Settings > API در داشبورد Supabase)
+   ============================================================ */
+const SUPABASE_URL = "https://atrfyfwwhtzxarnpjnlu.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_aYLDrrZaFlA21dT4fViPbg_HMiSLDpK";
+const CONFIG_OK = SUPABASE_URL.startsWith("http") && SUPABASE_ANON_KEY.length > 20;
+let sb = null;
+if (CONFIG_OK) {
+  sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+}
+
+/* ============================================================
+   Jalali (Shamsi) calendar conversion helpers
+   ============================================================ */
+function div(a,b){return ~~(a/b);}
+function jalCal(jy){
+  const breaks=[-61,9,38,199,426,686,756,818,1111,1181,1210,1635,2060,2097,2192,2262,2324,2394,2456,3178];
+  let bl=breaks.length, gy=jy+621, leapJ=-14, jp=breaks[0], jm, jump=0, leap, n, i;
+  if(jy<jp||jy>=breaks[bl-1]) throw new Error("Invalid Jalali year "+jy);
+  for(i=1;i<bl;i+=1){jm=breaks[i]; jump=jm-jp; if(jy<jm) break; leapJ+=div(jump,33)*8+div(jump%33,4); jp=jm;}
+  n=jy-jp; leapJ+=div(n,33)*8+div((n%33)+3,4);
+  if((jump%33)===4 && jump-n===4) leapJ+=1;
+  const leapG=div(gy,4)-div((div(gy,100)+1)*3,4)-150;
+  const march=20+leapJ-leapG;
+  if(jump-n<6) n=n-jump+div(jump+4,33)*33;
+  leap=(((n+1)%33)-1)%4;
+  if(leap===-1) leap=4;
+  return {leap:leap,gy:gy,march:march};
+}
+function j2d(jy,jm,jd){
+  const r=jalCal(jy);
+  return g2d(r.gy,3,r.march)+(jm-1)*31-div(jm,7)*(jm-7)+jd-1;
+}
+function g2d(gy,gm,gd){
+  let d=div((gy+div(gm-8,6)+100100)*1461,4)+div(153*((gm+9)%12)+2,5)+gd-34840408;
+  d=d-div(div(gy+100100+div(gm-8,6),100)*3,4)+752;
+  return d;
+}
+function d2g(jdn){
+  let j=4*jdn+139361631; j=j+div(div(4*jdn+183187720,146097)*3,4)*4-3908;
+  const i=div((j%1461),4)*5+308;
+  const gd=div(i%153,5)+1;
+  const gm=(div(i,153)%12)+1;
+  const gy=div(j,1461)-100100+div(8-gm,6);
+  return {gy:gy,gm:gm,gd:gd};
+}
+function d2j(jdn){
+  const gy=d2g(jdn).gy; let jy=gy-621;
+  const r=jalCal(jy);
+  let jdn1f=g2d(gy,3,r.march);
+  let k=jdn-jdn1f;
+  if(k>=0){
+    if(k<=185){return {jy:jy,jm:1+div(k,31),jd:(k%31)+1};}
+    k-=186;
+  } else {
+    jy-=1; k+=179;
+    if(r.leap===1) k+=1;
+  }
+  return {jy:jy,jm:7+div(k,30),jd:(k%30)+1};
+}
+function gregToJalali(gy,gm,gd){return d2j(g2d(gy,gm,gd));}
+function jalaliToGreg(jy,jm,jd){const g=d2g(j2d(jy,jm,jd));return g;}
+function todayJalali(){const t=new Date(); const j=gregToJalali(t.getFullYear(),t.getMonth()+1,t.getDate()); return j;}
+const JMONTHS=["فروردین","اردیبهشت","خرداد","تیر","مرداد","شهریور","مهر","آبان","آذر","دی","بهمن","اسفند"];
+const BADGE_OPTIONS=["بدون بج","بج اول","بج دوم","بج سوم","بج چهارم","بج پنجم","بج ششم"];
+function badgeSelectHTML(id, currentVal){
+  return `<select id="${id}">${BADGE_OPTIONS.map(b=>`<option value="${b}" ${currentVal===b?'selected':''}>${b}</option>`).join("")}</select>`;
+}
+function jStr(j){ if(!j) return ""; return `${j.jy}/${String(j.jm).padStart(2,"0")}/${String(j.jd).padStart(2,"0")}`; }
+function jStrPretty(j){ if(!j) return ""; return `${j.jd} ${JMONTHS[j.jm-1]} ${j.jy}`; }
+function parseJStr(s){
+  if(!s) return null;
+  const p=s.split("/"); if(p.length!==3) return null;
+  return {jy:parseInt(p[0]), jm:parseInt(p[1]), jd:parseInt(p[2])};
+}
+
+/* ============================================================
+   Checklist step definitions
+   ============================================================ */
+const STEPS = [
+  {id:"s1", title:"تکمیل فرم مشاوره"},
+  {id:"s2", title:"دیدن ویدئوی آشناسازی اولیه"},
+  {id:"s3", title:"مطالعه جزوه یا دیدن آموزش شروع سریع"},
+  {id:"s4", title:"دیدن ویدئوی ساخت پایگاه مشتریان"},
+  {id:"s5", title:"دیدن ویدئوی آشناسازی ثانویه"},
+  {id:"s6", title:"نوشتن لیست نفرات"},
+  {id:"s7", title:"جلسه بررسی لیست"},
+];
+const LAST_STEP_ID = STEPS[STEPS.length-1].id;
+
+/* ============================================================
+   State
+   ============================================================ */
+let state = {
+  leader: JSON.parse(localStorage.getItem("psha_leader") || "null"),
+  allLeaders: [],
+  entries: [],
+  descendantCodes: new Set(),
+  tab: "add",
+  search: "",
+  openEntry: null,
+  loading: false,
+  authMode: "login",
+  errorMsg: "",
+};
+
+function saveSession(l){ localStorage.setItem("psha_leader", JSON.stringify(l)); state.leader=l; }
+function logout(){ localStorage.removeItem("psha_leader"); state.leader=null; state.entries=[]; state.allLeaders=[]; render(); }
+function genCode(){
+  const chars="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let c=""; for(let i=0;i<6;i++) c+=chars[Math.floor(Math.random()*chars.length)];
+  return c;
+}
+
+/* ============================================================
+   Data loading
+   ============================================================ */
+async function loadAllLeaders(){
+  const {data,error} = await sb.from("leaders").select("id,name,phone,code,parent_code,created_at");
+  if(error){ console.error(error); return []; }
+  return data||[];
+}
+function computeDescendants(rootCode, leaders){
+  const set = new Set([rootCode]);
+  let changed=true;
+  while(changed){
+    changed=false;
+    for(const l of leaders){
+      if(l.parent_code && set.has(l.parent_code) && !set.has(l.code)){ set.add(l.code); changed=true; }
+    }
+  }
+  return set;
+}
+async function loadEntries(){
+  const {data,error} = await sb.from("entries").select("*").order("created_at",{ascending:false});
+  if(error){ console.error(error); return []; }
+  return data||[];
+}
+async function refreshData(){
+  state.loading=true; render();
+  state.allLeaders = await loadAllLeaders();
+  state.descendantCodes = computeDescendants(state.leader.code, state.allLeaders);
+  const all = await loadEntries();
+  state.entries = all.filter(e=>state.descendantCodes.has(e.leader_code));
+  state.loading=false; render();
+}
+
+/* ============================================================
+   Auth actions
+   ============================================================ */
+async function doLogin(phone,password){
+  state.errorMsg="";
+  if(!phone.trim()){ state.errorMsg="شماره تماس را وارد کنید."; render(); return; }
+  const {data,error} = await sb.from("leaders").select("*").eq("phone",phone.trim()).maybeSingle();
+  if(error){ state.errorMsg="خطا در اتصال به سرور."; render(); return; }
+  if(!data){ state.errorMsg="کاربری با این شماره یافت نشد. لطفاً ثبت‌نام کنید."; render(); return; }
+  if(data.password && data.password!==password){ state.errorMsg="رمز عبور اشتباه است."; render(); return; }
+  saveSession(data);
+  await refreshData();
+}
+async function doRegister(name,phone,uplineCode,ownCode,password){
+  state.errorMsg="";
+  if(!name.trim()||!phone.trim()){ state.errorMsg="نام و شماره تماس الزامی است."; render(); return; }
+  if(!password || password.trim().length<4){ state.errorMsg="رمز عبور باید حداقل ۴ کاراکتر باشد."; render(); return; }
+  const cleanCode = ownCode.trim().toUpperCase();
+  if(!/^[A-Za-z0-9]{4,6}$/.test(cleanCode)){
+    state.errorMsg="کد اختصاصی باید بین ۴ تا ۶ حرف/رقم انگلیسی باشد."; render(); return;
+  }
+  const existingAll = await loadAllLeaders();
+  if(existingAll.length>0 && !uplineCode.trim()){
+    state.errorMsg="کد لیدر بالادستی الزامی است. این کد را از لیدر معرف خود بگیرید."; render(); return;
+  }
+  if(uplineCode.trim()){
+    const up = existingAll.find(l=>l.code===uplineCode.trim().toUpperCase());
+    if(!up){ state.errorMsg="کد لیدر بالادستی نامعتبر است."; render(); return; }
+  }
+  const dupPhone = existingAll.find(l=>l.phone===phone.trim());
+  if(dupPhone){ state.errorMsg="این شماره قبلاً ثبت‌نام کرده است. وارد شوید."; render(); return; }
+  const dupCode = existingAll.find(l=>l.code===cleanCode);
+  if(dupCode){ state.errorMsg="این کد قبلاً توسط شخص دیگری انتخاب شده. کد دیگری وارد کنید."; render(); return; }
+  const code = cleanCode;
+  const row={ name:name.trim(), phone:phone.trim(), code, password: password.trim(), parent_code: uplineCode.trim()? uplineCode.trim().toUpperCase() : null };
+  const {data,error} = await sb.from("leaders").insert(row).select().single();
+  if(error){ state.errorMsg="خطا در ثبت‌نام: "+error.message; render(); return; }
+  saveSession(data);
+  await refreshData();
+}
+
+/* ============================================================
+   Entry actions
+   ============================================================ */
+function blankEntryForm(){
+  return {
+    member_name:"", introducer_name: state.leader?state.leader.name:"", presenter_name:"",
+    presenter_date:"", start_amount:"بدون بج", registration_date: jStr(todayJalali()),
+    business_type:"none",
+    notes:""
+  };
+}
+let entryForm = blankEntryForm();
+
+async function createEntry(){
+  state.errorMsg="";
+  if(!entryForm.member_name.trim()){ state.errorMsg="نام تازه‌ورودی الزامی است."; render(); return; }
+  const checklist={}; STEPS.forEach(s=>checklist[s.id]=false);
+  const row = {
+    leader_code: state.leader.code,
+    member_name: entryForm.member_name.trim(),
+    introducer_name: entryForm.introducer_name.trim(),
+    presenter_name: entryForm.presenter_name.trim(),
+    presenter_date: entryForm.presenter_date,
+    start_amount: entryForm.start_amount || "بدون بج",
+    registration_date: entryForm.registration_date,
+    business_type: entryForm.business_type,
+    notes: entryForm.notes,
+    checklist
+  };
+  const {data,error} = await sb.from("entries").insert(row).select().single();
+  if(error){ state.errorMsg="خطا در ذخیره‌سازی: "+error.message; render(); return; }
+  entryForm = blankEntryForm();
+  await refreshData();
+  state.tab="list"; state.openEntry=data; render();
+}
+async function updateEntryField(entry, field, value){
+  entry[field]=value;
+  const {error} = await sb.from("entries").update({[field]:value}).eq("id",entry.id);
+  if(error) console.error(error);
+}
+async function toggleStepLocal(entry, stepId, checkEl){
+  entry.checklist[stepId] = !entry.checklist[stepId];
+  if(entry.checklist[stepId]){ checkEl.classList.add("checked"); checkEl.textContent="✓"; }
+  else { checkEl.classList.remove("checked"); checkEl.textContent=""; }
+  const pct=completionPct(entry);
+  const bar=document.getElementById("overallBar");
+  if(bar) bar.style.width=pct+"%";
+  const txt=document.getElementById("overallText");
+  if(txt) txt.textContent=`${pct}% مراحل تکمیل شده (${STEPS.filter(s=>entry.checklist[s.id]).length} از ${STEPS.length})`;
+  if(stepId===LAST_STEP_ID){
+    const unlocked = !!entry.checklist[stepId];
+    ["ef_training_end_date_d","ef_training_end_date_m","ef_training_end_date_y"].forEach(id=>{
+      const el=document.getElementById(id); if(el) el.disabled=!unlocked;
+    });
+    const hint=document.getElementById("trainingLockHint");
+    if(hint) hint.style.display = unlocked ? "none" : "block";
+  }
+  const { error } = await sb.from("entries").update({checklist: entry.checklist}).eq("id", entry.id);
+  if(error){ console.error(error); return; }
+  const toast=document.getElementById("saveToast");
+  if(toast){ toast.textContent="✔ ذخیره شد"; toast.style.display="block"; clearTimeout(toast._hideTimer); toast._hideTimer=setTimeout(()=>{ toast.style.display="none"; },1200); }
+}
+async function deleteEntry(entry){
+  if(!confirm2("این تازه‌ورودی حذف شود؟ این عمل غیرقابل بازگشت است.")) return;
+  const {error} = await sb.from("entries").delete().eq("id",entry.id);
+  if(error){ alert("خطا در حذف"); return; }
+  state.openEntry=null;
+  await refreshData();
+}
+function confirm2(msg){ return window.confirm(msg); } // iOS-safe wrapper kept for consistency
+
+function completionPct(entry){
+  const total=STEPS.length; let done=0;
+  STEPS.forEach(s=>{ if(entry.checklist && entry.checklist[s.id]) done++; });
+  return Math.round(done/total*100);
+}
+function ringColor(pct){
+  if(pct>=100) return "var(--teal)";
+  if(pct>=50) return "var(--gold)";
+  return "#B8A98A";
+}
+
+/* ============================================================
+   RENDER — root
+   ============================================================ */
+function render(){
+  const app=document.getElementById("app");
+  if(!state.leader){ app.innerHTML = renderAuth(); attachAuthEvents(); return; }
+  app.innerHTML = renderMain();
+  attachMainEvents();
+}
+
+function renderAuth(){
+  return `
+  <div class="auth-wrap">
+    <div class="card auth-card">
+      <div style="text-align:center;margin-bottom:14px;">
+        <div class="brand-steps" style="justify-content:center;margin:0 auto 10px;">
+          <i></i><i></i><i></i><i></i>
+        </div>
+        <h1 style="font-size:18px;margin:0;">پله‌های صعود همکاران جدید</h1>
+        <p style="font-size:12.5px;color:var(--ink-soft);margin-top:4px;">ورود ویژه لیدرهای سازمان</p>
+      </div>
+      <div class="auth-toggle">
+        <button id="tglLogin" class="${state.authMode==='login'?'active':''}">ورود</button>
+        <button id="tglReg" class="${state.authMode==='register'?'active':''}">ثبت‌نام لیدر جدید</button>
+      </div>
+      ${state.errorMsg?`<div class="error-msg">${state.errorMsg}</div>`:""}
+      ${state.authMode==='login'? `
+        <div class="field"><label>شماره تماس</label><input type="tel" id="loginPhone" placeholder="09xxxxxxxxx"></div>
+        <div class="field"><label>رمز عبور</label><input type="password" id="loginPassword" placeholder="رمز عبور"></div>
+        <button class="btn btn-primary" id="btnLogin">ورود</button>
+      `:`
+        <div class="field"><label>نام و نام خانوادگی</label><input type="text" id="regName" placeholder="مثلاً محمد سیستانی"></div>
+        <div class="field"><label>شماره تماس</label><input type="tel" id="regPhone" placeholder="09xxxxxxxxx"></div>
+        <div class="field"><label>رمز عبور دلخواه (حداقل ۴ کاراکتر)</label><input type="password" id="regPassword" placeholder="رمز عبور"></div>
+        <div class="field"><label>کد اختصاصی دلخواه شما (۴ تا ۶ حرف/رقم انگلیسی)</label><input type="text" id="regOwnCode" placeholder="مثلاً MOHAM1" maxlength="6"></div>
+        <div class="hint">این کد، شناسه شماست. آن را به لیدرهای زیرمجموعه خود بدهید تا هنگام ثبت‌نام وارد کنند.</div>
+        <div class="field"><label>کد لیدر بالادستی (معرف شما)</label><input type="text" id="regUpline" placeholder="کد لیدر بالادستی — از لیدر خود بگیرید"></div>
+        <div class="hint">اگر شما اولین کاربر این سازمان هستید، این فیلد را خالی بگذارید. در غیر این صورت وارد کردن کد لیدر بالادستی الزامی است.</div>
+        <button class="btn btn-gold" id="btnRegister" style="margin-top:10px;">ثبت‌نام</button>
+      `}
+      <div style="text-align:center;font-size:10.5px;color:var(--ink-soft);margin-top:16px;">طراح: محمد سیستانی</div>
+    </div>
+  </div>`;
+}
+function attachAuthEvents(){
+  const tglLogin=document.getElementById("tglLogin"), tglReg=document.getElementById("tglReg");
+  if(tglLogin) tglLogin.onclick=()=>{state.authMode="login";state.errorMsg="";render();};
+  if(tglReg) tglReg.onclick=()=>{state.authMode="register";state.errorMsg="";render();};
+  const btnLogin=document.getElementById("btnLogin");
+  if(btnLogin) btnLogin.onclick=()=>doLogin(document.getElementById("loginPhone").value, document.getElementById("loginPassword").value);
+  const btnReg=document.getElementById("btnRegister");
+  if(btnReg) btnReg.onclick=()=>doRegister(
+    document.getElementById("regName").value,
+    document.getElementById("regPhone").value,
+    document.getElementById("regUpline").value,
+    document.getElementById("regOwnCode").value,
+    document.getElementById("regPassword").value
+  );
+}
+
+/* ============================================================
+   RENDER — main app
+   ============================================================ */
+function renderMain(){
+  return `
+  <div class="brand">
+    <div class="brand-steps"><i></i><i></i><i></i><i></i></div>
+    <div>
+      <h1>پله‌های صعود همکاران جدید</h1>
+      <p>سازمان زیرمجموعه: ${state.descendantCodes.size} لیدر فعال</p>
+    </div>
+    <div class="brand-right">
+      <b>${state.leader.name}</b>
+      کد شما: ${state.leader.code}
+      <br><button class="logout-btn" id="btnLogout">خروج</button>
+    </div>
+  </div>
+  <div class="container">
+    <div class="tabs">
+      <button class="tab-btn ${state.tab==='add'?'active':''}" data-tab="add">افزودن تازه‌ورودی</button>
+      <button class="tab-btn ${state.tab==='list'?'active':''}" data-tab="list">لیست و پیگیری</button>
+      <button class="tab-btn ${state.tab==='stats'?'active':''}" data-tab="stats">گزارش و آمار</button>
+      <button class="tab-btn ${state.tab==='pdf'?'active':''}" data-tab="pdf">خروجی PDF</button>
+      <button class="tab-btn ${state.tab==='team'?'active':''}" data-tab="team">زیرمجموعه من</button>
+    </div>
+    ${state.loading? `<div class="loader">در حال بارگذاری اطلاعات...</div>` : renderTabBody()}
+    <div style="text-align:center;font-size:10.5px;color:var(--ink-soft);margin-top:22px;padding-bottom:6px;">طراح: محمد سیستانی</div>
+  </div>
+  ${state.openEntry? renderEntryModal(state.openEntry) : ""}
+  `;
+}
+function renderTabBody(){
+  if(state.tab==="add") return renderAddTab();
+  if(state.tab==="list") return renderListTab();
+  if(state.tab==="stats") return renderStatsTab();
+  if(state.tab==="pdf") return renderPdfTab();
+  if(state.tab==="team") return renderTeamTab();
+  return "";
+}
+
+function jalaliPickerHTML(prefix, valueStr, label, disabled){
+  const ty=todayJalali().jy;
+  const v = parseJStr(valueStr) || {jy: ty};
+  const years=[];
+  for(let y=ty-2;y<=ty+2;y++) years.push(y);
+  let opt=(list,cur)=>list.map(x=>`<option value="${x}" ${String(x)===String(cur)?'selected':''}>${x}</option>`).join("");
+  const dis = disabled ? "disabled" : "";
+  return `
+  <div class="field">
+    <label>${label}</label>
+    <div class="jalali-row">
+      <select id="${prefix}_d" ${dis}>
+        <option value="">روز</option>
+        ${opt(Array.from({length:31},(_,i)=>i+1), v.jd)}
+      </select>
+      <select id="${prefix}_m" ${dis}>
+        <option value="">ماه</option>
+        ${JMONTHS.map((m,i)=>`<option value="${i+1}" ${String(i+1)===String(v.jm)?'selected':''}>${m}</option>`).join("")}
+      </select>
+      <select id="${prefix}_y" ${dis}>
+        <option value="">سال</option>
+        ${opt(years, v.jy)}
+      </select>
+    </div>
+  </div>`;
+}
+function readJalaliPicker(prefix){
+  const d=document.getElementById(prefix+"_d").value;
+  const m=document.getElementById(prefix+"_m").value;
+  const y=document.getElementById(prefix+"_y").value;
+  if(!d||!m||!y) return "";
+  return jStr({jy:y,jm:m,jd:d});
+}
+
+function renderAddTab(){
+  return `
+  <div class="card">
+    <h2><span class="dot"></span>ثبت تازه‌ورودی جدید</h2>
+    ${state.errorMsg?`<div class="error-msg">${state.errorMsg}</div>`:""}
+    <div class="field"><label>نام تازه‌ورودی</label><input type="text" id="f_member_name" value="${entryForm.member_name}" placeholder="نام و نام خانوادگی"></div>
+    <div class="row2">
+      <div class="field"><label>نام معرف</label><input type="text" id="f_introducer_name" value="${entryForm.introducer_name}"></div>
+      <div class="field"><label>نام پرزنتور</label><input type="text" id="f_presenter_name" value="${entryForm.presenter_name}"></div>
+    </div>
+    ${jalaliPickerHTML("f_presenter_date", entryForm.presenter_date, "تاریخ پرزنت")}
+    <div class="row2">
+      <div class="field"><label>بج شروع تازه‌ورودی</label>${badgeSelectHTML("f_start_amount", entryForm.start_amount)}</div>
+      <div class="field"><label>کسب‌وکار</label>
+        <select id="f_business_type">
+          <option value="none" ${entryForm.business_type==='none'?'selected':''}>بدون کسب و کار</option>
+          <option value="small" ${entryForm.business_type==='small'?'selected':''}>کسب‌وکار کوچک</option>
+          <option value="large" ${entryForm.business_type==='large'?'selected':''}>کسب‌وکار بزرگ</option>
+        </select>
+      </div>
+    </div>
+    ${jalaliPickerHTML("f_registration_date", entryForm.registration_date, "تاریخ ثبت‌نام تازه‌ورودی")}
+    <div class="field"><label>یادداشت (اختیاری)</label><textarea id="f_notes" rows="2">${entryForm.notes}</textarea></div>
+    <button class="btn btn-gold" id="btnCreateEntry">ثبت و رفتن به چک‌لیست مراحل</button>
+  </div>`;
+}
+function collectAddForm(){
+  entryForm.member_name=document.getElementById("f_member_name").value;
+  entryForm.introducer_name=document.getElementById("f_introducer_name").value;
+  entryForm.presenter_name=document.getElementById("f_presenter_name").value;
+  entryForm.presenter_date=readJalaliPicker("f_presenter_date");
+  entryForm.start_amount=document.getElementById("f_start_amount").value;
+  /* start_amount now holds a badge label string, e.g. "بج دوم" */
+  entryForm.business_type=document.getElementById("f_business_type").value;
+  entryForm.registration_date=readJalaliPicker("f_registration_date");
+  entryForm.notes=document.getElementById("f_notes").value;
+}
+
+function renderListTab(){
+  const q=state.search.trim();
+  let list=state.entries;
+  if(q) list=list.filter(e=> (e.member_name||"").includes(q) || (e.introducer_name||"").includes(q));
+  return `
+  <div class="search-box">
+    <input type="text" id="searchInput" placeholder="جستجوی نام تازه‌ورودی یا معرف..." value="${state.search}">
+  </div>
+  ${list.length===0? `<div class="empty-state">موردی یافت نشد.</div>` :
+    list.map(e=>{
+      const pct=completionPct(e);
+      const leader = state.allLeaders.find(l=>l.code===e.leader_code);
+      return `
+      <div class="entry-item" data-id="${e.id}">
+        <div class="progress-ring" style="background:${ringColor(pct)}">${pct}%</div>
+        <div class="entry-main">
+          <div class="nm">${e.member_name}</div>
+          <div class="sub">معرف: ${e.introducer_name||"—"} ${leader? `<span class="badge badge-teal">${leader.name}</span>`:""}
+            <span class="badge">${e.business_type==='large'?'کسب‌وکار بزرگ':'کسب‌وکار کوچک'}</span>
+          </div>
+        </div>
+      </div>`;
+    }).join("")
+  }`;
+}
+
+function buildLeaderHierarchy(rootCode, allLeaders){
+  const byParent={};
+  allLeaders.forEach(l=>{
+    const p = l.parent_code || "__none__";
+    (byParent[p]=byParent[p]||[]).push(l);
+  });
+  Object.values(byParent).forEach(arr=>arr.sort((a,b)=>a.name.localeCompare(b.name,'fa')));
+  const rootLeader = allLeaders.find(l=>l.code===rootCode);
+  const ordered=[];
+  if(rootLeader) ordered.push({leader:rootLeader, depth:0});
+  function walk(code, depth){
+    const children = byParent[code]||[];
+    children.forEach(ch=>{
+      ordered.push({leader:ch, depth});
+      walk(ch.code, depth+1);
+    });
+  }
+  walk(rootCode, 1);
+  return ordered;
+}
+function renderTeamTab(){
+  const hierarchy = buildLeaderHierarchy(state.leader.code, state.allLeaders);
+  return `
+  <div class="card">
+    <h2><span class="dot"></span>اشتراک‌گذاری کد دعوت</h2>
+    <p style="font-size:13px;color:var(--ink-soft);">این کد را به لیدرهای زیرمجموعه خود بدهید تا هنگام ثبت‌نام وارد کنند و در سازمان شما قرار بگیرند.</p>
+    <div class="copycode">
+      <span style="font-size:12.5px;">کد شما:</span><b>${state.leader.code}</b>
+      <button class="btn btn-outline btn-sm" id="btnCopyCode" style="margin-inline-start:auto;">کپی</button>
+    </div>
+  </div>
+  <div class="card">
+    <h2><span class="dot"></span>سلسله‌مراتب زیرمجموعه (${hierarchy.length})</h2>
+    <p class="hint" style="margin-top:0;">هر چه تورفتگی بیشتر باشد، یعنی آن لیدر در لول پایین‌تری از سازمان قرار دارد.</p>
+    ${hierarchy.map(({leader:l,depth})=>{
+      const cnt=state.entries.filter(e=>e.leader_code===l.code).length;
+      const isMe = l.code===state.leader.code;
+      const indent = depth*22;
+      const levelBadge = depth===0? 'راس شما' : `لول ${depth}`;
+      return `<div class="entry-item" style="margin-right:${indent}px;">
+        <div class="entry-main">
+          <div class="nm">${l.name} ${isMe?'<span class="badge badge-teal">شما</span>':''} <span class="badge">${levelBadge}</span></div>
+          <div class="sub">کد: ${l.code}${l.parent_code? ' · معرف: '+l.parent_code : ''} · تعداد تازه‌ورودی: ${cnt}</div>
+        </div>
+      </div>`;
+    }).join("")}
+  </div>`;
+}
+
+function renderStatsTab(){
+  const entries=state.entries;
+  const total=entries.length;
+  const small=entries.filter(e=>e.business_type==='small').length;
+  const large=entries.filter(e=>e.business_type==='large').length;
+  const avgPct = total? Math.round(entries.reduce((s,e)=>s+completionPct(e),0)/total):0;
+  const fullyDone = entries.filter(e=>completionPct(e)===100).length;
+  const stepStats = STEPS.map(s=>{
+    const done = entries.filter(e=>e.checklist && e.checklist[s.id]).length;
+    return {title:s.title, pct: total? Math.round(done/total*100):0};
+  });
+  return `
+  <div class="stat-grid">
+    <div class="stat-box"><div class="num">${total}</div><div class="lbl">کل تازه‌واردها</div></div>
+    <div class="stat-box"><div class="num">${avgPct}%</div><div class="lbl">میانگین پیشرفت</div></div>
+    <div class="stat-box"><div class="num">${small}</div><div class="lbl">کسب‌وکار کوچک</div></div>
+    <div class="stat-box"><div class="num">${large}</div><div class="lbl">کسب‌وکار بزرگ</div></div>
+    <div class="stat-box" style="grid-column:1/3;"><div class="num">${fullyDone}</div><div class="lbl">تکمیل‌شده (۱۸ از ۱۸ مرحله)</div></div>
+  </div>
+  <div class="card">
+    <h2><span class="dot"></span>درصد تکمیل هر مرحله در کل سازمان</h2>
+    ${stepStats.map(s=>`
+      <div class="bar-row">
+        <div class="lbl-row"><span>${s.title}</span><span>${s.pct}%</span></div>
+        <div class="bar-track"><div class="bar-fill" style="width:${s.pct}%"></div></div>
+      </div>`).join("")}
+  </div>`;
+}
+
+function renderPdfTab(){
+  return `
+  <div class="card">
+    <h2><span class="dot"></span>خروجی گزارش PDF</h2>
+    <div class="field"><label>نوع گزارش</label>
+      <select id="pdfPeriodType">
+        <option value="week">هفتگی</option>
+        <option value="month">ماهانه</option>
+      </select>
+    </div>
+    <div class="field"><label>سال (شمسی)</label><input type="number" id="pdfYear" value="${todayJalali().jy}"></div>
+    <div id="pdfWeekWrap" class="field"><label>شماره هفته (تقریبی، هر ۷ روز از ۱ فروردین)</label><input type="number" id="pdfWeek" value="1" min="1" max="53"></div>
+    <div id="pdfMonthWrap" class="field" style="display:none;"><label>ماه</label>
+      <select id="pdfMonth">${JMONTHS.map((m,i)=>`<option value="${i+1}">${m}</option>`).join("")}</select>
+    </div>
+    <button class="btn btn-gold" id="btnGenPdf">ساخت و دانلود PDF</button>
+    <div class="hint">گزارش شامل آمار کلی سازمان شما و لیست کامل تازه‌واردها با وضعیت مراحل در بازه انتخابی است.</div>
+  </div>`;
+}
+
+/* ============================================================
+   Entry detail modal
+   ============================================================ */
+function renderEntryModal(e){
+  const pct=completionPct(e);
+  return `
+  <div class="modal-bg" id="modalBg">
+    <div class="modal-box">
+      <div class="top-bar-inline">
+        <h2 style="margin:0;">${e.member_name}</h2>
+        <button class="close-x" id="closeModal">✕</button>
+      </div>
+      <div class="overall-bar-wrap"><div class="overall-bar" id="overallBar" style="width:${pct}%"></div></div>
+      <div id="overallText" style="font-size:12.5px;color:var(--ink-soft);margin-bottom:12px;">${pct}% مراحل تکمیل شده (${STEPS.filter(s=>e.checklist[s.id]).length} از ${STEPS.length})</div>
+      <div id="saveToast" class="success-msg" style="display:none;">✔ تغییرات ذخیره شد</div>
+
+      <div class="card" style="padding:12px;">
+        <h2 style="font-size:13.5px;"><span class="dot"></span>اطلاعات کلی (قابل ویرایش)</h2>
+        <div class="row2">
+          <div class="field"><label>نام معرف</label><input type="text" id="ef_introducer_name" value="${e.introducer_name||''}"></div>
+          <div class="field"><label>نام پرزنتور</label><input type="text" id="ef_presenter_name" value="${e.presenter_name||''}"></div>
+        </div>
+        ${jalaliPickerHTML("ef_presenter_date", e.presenter_date, "تاریخ پرزنت")}
+        <div class="row2">
+          <div class="field"><label>بج شروع تازه‌ورودی</label>${badgeSelectHTML("ef_start_amount", e.start_amount)}</div>
+          <div class="field"><label>کسب‌وکار</label>
+            <select id="ef_business_type">
+              <option value="none" ${e.business_type==='none'?'selected':''}>بدون کسب و کار</option>
+              <option value="small" ${e.business_type==='small'?'selected':''}>کسب‌وکار کوچک</option>
+              <option value="large" ${e.business_type==='large'?'selected':''}>کسب‌وکار بزرگ</option>
+            </select>
+          </div>
+        </div>
+        ${jalaliPickerHTML("ef_registration_date", e.registration_date, "تاریخ ثبت‌نام")}
+        <div class="field"><label>یادداشت</label><textarea id="ef_notes" rows="2">${e.notes||''}</textarea></div>
+      </div>
+
+      <div class="card" style="padding:12px;">
+        <h2 style="font-size:13.5px;"><span class="dot"></span>چک‌لیست مراحل آموزشی</h2>
+        <div class="hint" style="margin-top:0;margin-bottom:8px;">مراحل را تیک بزنید، سپس در پایین فرم روی «ذخیره تغییرات» بزنید.</div>
+        ${STEPS.map(s=>`
+          <div class="step-item">
+            <div class="step-check ${e.checklist[s.id]?'checked':''}" data-step="${s.id}">${e.checklist[s.id]?'✓':''}</div>
+            <div class="step-body">
+              <div class="step-title">${s.title}</div>
+              ${s.desc?`<div class="step-desc">${s.desc}</div>`:""}
+              ${s.time?`<span class="step-time">${s.time}</span>`:""}
+            </div>
+          </div>`).join("")}
+      </div>
+
+      <div class="card" style="padding:12px;">
+        <h2 style="font-size:13.5px;"><span class="dot"></span>تکمیل آموزش‌ها</h2>
+        <div id="trainingLockHint" class="hint" style="margin-top:0;${e.checklist[LAST_STEP_ID]?'display:none;':''}">این بخش بعد از تیک زدن آخرین مرحله چک‌لیست («جلسه بررسی لیست») فعال می‌شود.</div>
+        ${jalaliPickerHTML("ef_training_end_date", e.training_end_date, "تاریخ اتمام آموزش‌ها", !e.checklist[LAST_STEP_ID])}
+      </div>
+
+      <button class="btn btn-gold" id="btnSaveEntryInfo" style="margin-bottom:10px;">ذخیره تغییرات</button>
+      <button class="btn btn-danger" id="btnDeleteEntry">حذف این تازه‌ورودی</button>
+    </div>
+  </div>`;
+}
+
+/* ============================================================
+   Event wiring
+   ============================================================ */
+function attachMainEvents(){
+  const logoutBtn=document.getElementById("btnLogout");
+  if(logoutBtn) logoutBtn.onclick=logout;
+
+  document.querySelectorAll(".tab-btn").forEach(b=>{
+    b.onclick=()=>{ state.tab=b.dataset.tab; state.errorMsg=""; render(); };
+  });
+
+  if(state.tab==="add"){
+    const btn=document.getElementById("btnCreateEntry");
+    if(btn) btn.onclick=()=>{ collectAddForm(); createEntry(); };
+  }
+  if(state.tab==="list"){
+    const s=document.getElementById("searchInput");
+    if(s){ s.oninput=()=>{ state.search=s.value; render(); document.getElementById("searchInput").focus(); document.getElementById("searchInput").selectionStart=document.getElementById("searchInput").value.length; }; }
+    document.querySelectorAll(".entry-item").forEach(it=>{
+      it.onclick=()=>{ const id=it.dataset.id; state.openEntry = state.entries.find(e=>e.id===id); render(); };
+    });
+  }
+  if(state.tab==="team"){
+    const cp=document.getElementById("btnCopyCode");
+    if(cp) cp.onclick=()=>{ navigator.clipboard?.writeText(state.leader.code); cp.textContent="کپی شد!"; setTimeout(()=>{cp.textContent="کپی";},1500); };
+  }
+  if(state.tab==="pdf"){
+    const ptype=document.getElementById("pdfPeriodType");
+    if(ptype) ptype.onchange=()=>{
+      document.getElementById("pdfWeekWrap").style.display = ptype.value==='week'?'block':'none';
+      document.getElementById("pdfMonthWrap").style.display = ptype.value==='month'?'block':'none';
+    };
+    const btn=document.getElementById("btnGenPdf");
+    if(btn) btn.onclick=generatePdf;
+  }
+
+  if(state.openEntry){
+    const closeBtn=document.getElementById("closeModal");
+    if(closeBtn) closeBtn.onclick=()=>{ state.openEntry=null; render(); };
+    const bg=document.getElementById("modalBg");
+    if(bg) bg.onclick=(ev)=>{ if(ev.target.id==='modalBg'){ state.openEntry=null; render(); } };
+
+    document.querySelectorAll(".step-check").forEach(chk=>{
+      chk.onclick=()=> toggleStepLocal(state.openEntry, chk.dataset.step, chk);
+    });
+    const saveBtn=document.getElementById("btnSaveEntryInfo");
+    if(saveBtn) saveBtn.onclick=async ()=>{
+      const e=state.openEntry;
+      const updates={
+        introducer_name:document.getElementById("ef_introducer_name").value,
+        presenter_name:document.getElementById("ef_presenter_name").value,
+        presenter_date:readJalaliPicker("ef_presenter_date"),
+        start_amount:document.getElementById("ef_start_amount").value,
+        business_type:document.getElementById("ef_business_type").value,
+        registration_date:readJalaliPicker("ef_registration_date"),
+        notes:document.getElementById("ef_notes").value,
+        checklist: e.checklist,
+      };
+      if(e.checklist[LAST_STEP_ID]){
+        updates.training_end_date = readJalaliPicker("ef_training_end_date");
+      }
+      saveBtn.disabled=true; saveBtn.textContent="در حال ذخیره...";
+      Object.assign(e,updates);
+      const {error} = await sb.from("entries").update(updates).eq("id",e.id);
+      saveBtn.disabled=false; saveBtn.textContent="ذخیره تغییرات";
+      if(error){ alert("خطا در ذخیره‌سازی: "+error.message); return; }
+      const toast=document.getElementById("saveToast");
+      if(toast){ toast.style.display="block"; setTimeout(()=>{ toast.style.display="none"; },2000); }
+    };
+    const delBtn=document.getElementById("btnDeleteEntry");
+    if(delBtn) delBtn.onclick=()=>deleteEntry(state.openEntry);
+  }
+}
+
+/* ============================================================
+   PDF generation
+   ============================================================ */
+function entryInPeriod(e, periodType, year, week, month){
+  const rd = parseJStr(e.registration_date);
+  if(!rd) return false;
+  if(rd.jy!=year) return false;
+  if(periodType==='month') return rd.jm==month;
+  // week: approximate day-of-year based 7-day buckets
+  const dayOfYear = (rd.jm-1)*30 + rd.jd; // approximation, fine for reporting buckets
+  const wk = Math.ceil(dayOfYear/7);
+  return wk==week;
+}
+
+async function generatePdf(){
+  const periodType=document.getElementById("pdfPeriodType").value;
+  const year=document.getElementById("pdfYear").value;
+  const week=document.getElementById("pdfWeek").value;
+  const month=document.getElementById("pdfMonth").value;
+
+  const filtered = state.entries.filter(e=>entryInPeriod(e,periodType,year,week,month));
+  const total=filtered.length;
+  const avgPct= total? Math.round(filtered.reduce((s,e)=>s+completionPct(e),0)/total):0;
+  const small=filtered.filter(e=>e.business_type==='small').length;
+  const large=filtered.filter(e=>e.business_type==='large').length;
+
+  const periodLabel = periodType==='week' ? `هفته ${week} سال ${year}` : `${JMONTHS[month-1]} ${year}`;
+
+  const html = `
+    <div style="text-align:center;margin-bottom:18px;">
+      <div style="font-size:20px;font-weight:800;color:#1F2937;">پله‌های صعود همکاران جدید</div>
+      <div style="font-size:13px;color:#6b6458;margin-top:4px;">گزارش ${periodType==='week'?'هفتگی':'ماهانه'} — ${periodLabel}</div>
+      <div style="font-size:12px;color:#6b6458;">لیدر: ${state.leader.name} (کد ${state.leader.code})</div>
+    </div>
+    <div style="display:flex;gap:10px;margin-bottom:16px;">
+      <div style="flex:1;background:#F1ECE0;border-radius:10px;padding:12px;text-align:center;">
+        <div style="font-size:20px;font-weight:800;color:#2F6F63;">${total}</div>
+        <div style="font-size:11px;color:#6b6458;">تازه‌ورودی در بازه</div>
+      </div>
+      <div style="flex:1;background:#F1ECE0;border-radius:10px;padding:12px;text-align:center;">
+        <div style="font-size:20px;font-weight:800;color:#2F6F63;">${avgPct}%</div>
+        <div style="font-size:11px;color:#6b6458;">میانگین پیشرفت</div>
+      </div>
+      <div style="flex:1;background:#F1ECE0;border-radius:10px;padding:12px;text-align:center;">
+        <div style="font-size:20px;font-weight:800;color:#2F6F63;">${small}/${large}</div>
+        <div style="font-size:11px;color:#6b6458;">کوچک/بزرگ</div>
+      </div>
+    </div>
+    <table style="width:100%;border-collapse:collapse;font-size:11.5px;">
+      <thead>
+        <tr style="background:#22302B;color:#fff;">
+          <th style="padding:8px;text-align:right;">نام تازه‌ورودی</th>
+          <th style="padding:8px;text-align:right;">معرف</th>
+          <th style="padding:8px;text-align:right;">تاریخ ثبت‌نام</th>
+          <th style="padding:8px;text-align:right;">کسب‌وکار</th>
+          <th style="padding:8px;text-align:right;">پیشرفت</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${filtered.map((e,i)=>`
+          <tr style="background:${i%2===0?'#fff':'#FAF7F0'};">
+            <td style="padding:7px 8px;border-bottom:1px solid #E4DCC9;">${e.member_name}</td>
+            <td style="padding:7px 8px;border-bottom:1px solid #E4DCC9;">${e.introducer_name||'—'}</td>
+            <td style="padding:7px 8px;border-bottom:1px solid #E4DCC9;">${e.registration_date||'—'}</td>
+            <td style="padding:7px 8px;border-bottom:1px solid #E4DCC9;">${e.business_type==='large'?'بزرگ':'کوچک'}</td>
+            <td style="padding:7px 8px;border-bottom:1px solid #E4DCC9;">${completionPct(e)}%</td>
+          </tr>`).join("")}
+      </tbody>
+    </table>
+    ${total===0?'<div style="text-align:center;padding:30px;color:#6b6458;">تازه‌ورودی در این بازه ثبت نشده است.</div>':''}
+  `;
+  const renderDiv=document.getElementById("pdfRender");
+  renderDiv.innerHTML=html;
+  renderDiv.style.top="0"; renderDiv.style.left="0"; renderDiv.style.zIndex="-1";
+
+  const canvas = await html2canvas(renderDiv, {scale:2});
+  renderDiv.style.top="-9999px"; renderDiv.style.left="-9999px";
+  const imgData = canvas.toDataURL("image/png");
+  const { jsPDF } = window.jspdf;
+  const pdf = new jsPDF({unit:"pt", format:"a4"});
+  const pageWidth = pdf.internal.pageSize.getWidth();
+  const imgWidth = pageWidth - 40;
+  const imgHeight = canvas.height * imgWidth / canvas.width;
+  pdf.addImage(imgData, "PNG", 20, 20, imgWidth, imgHeight);
+  pdf.save(`گزارش_${periodType==='week'?'هفتگی':'ماهانه'}_${periodLabel}.pdf`);
+}
+
+/* ============================================================
+   Init
+   ============================================================ */
+if(!CONFIG_OK){
+  document.getElementById("app").innerHTML = `
+    <div class="auth-wrap">
+      <div class="card auth-card">
+        <h1 style="font-size:17px;margin:0 0 10px;">تنظیمات اولیه لازم است</h1>
+        <p style="font-size:13.5px;line-height:2;color:var(--ink-soft);">
+          برای اجرای برنامه، ابتدا باید اطلاعات پروژه Supabase را در فایل وارد کنید.<br>
+          در ابتدای بخش &lt;script&gt; فایل، مقادیر زیر را با اطلاعات واقعی پروژه خودتان (از Settings &gt; API در داشبورد Supabase) جایگزین کنید:
+        </p>
+        <pre style="background:var(--surface-2);padding:12px;border-radius:10px;font-size:12px;direction:ltr;text-align:left;overflow-x:auto;">const SUPABASE_URL = "...";
+const SUPABASE_ANON_KEY = "...";</pre>
+        <p style="font-size:12.5px;color:var(--ink-soft);">همچنین حتماً فایل schema.sql را یک‌بار در SQL Editor پروژه Supabase اجرا کرده باشید.</p>
+      </div>
+    </div>`;
+} else if(state.leader){ refreshData(); } else { render(); }
+</script>
+</body>
+</html>
